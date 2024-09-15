@@ -5,12 +5,15 @@ import network
 import time
 
 import esp
+
 esp.osdebug(None)
 
 import gc
+
 gc.collect()
 
-print('booting...')
+print("booting...")
+
 
 def connect(username, password):
     board_led = machine.Pin(2, machine.Pin.OUT)
@@ -36,10 +39,11 @@ def connect(username, password):
 
     print(sta_if.ifconfig())
 
+
 ssid, password = open("creds", "r").read().split("\n")[:-1]
 
 connect(ssid, password)
 
-print('Connection successful')
+print("Connection successful")
 
 led = machine.Pin(2, machine.Pin.OUT)

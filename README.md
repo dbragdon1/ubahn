@@ -1,5 +1,23 @@
 # OLED U-Bahn Sign
 
+# Description
+
+The Intention of this project is to create a tiny, living U-Bahn Sign that displays arrivals/departures at a given station
+
+Ultimately, I am going for something that looks like this sign that you'd see in a U-Bahn station:
+
+![Example U-Bahn Sign](./assets/example_ubahn_sign.jpg)
+
+The source of this image is from [this post](https://i.redd.it/gpu45ktwzy181.jpg)
+
+# TODO
+
+- Add time-to-arrival information
+- Add line information 
+- Add special symbols (handicap information, etc.)
+
+# Current Appearence
+
 ![Example of OLED Displaying Stops](./assets/sample_display_1.jpg)
 
 # References

@@ -1,18 +1,15 @@
 import machine
 import uasyncio
 import urequests
-import gc
-import network
 import time
 import ssd1306
-
-username, password = open("creds", "r").read().split("\n")[:-1]
-
+import bitmaps
 
 OLED_WIDTH = 128
 OLED_HEIGHT = 64
 SCROLL_PAUSE_TIME = 0
-CHAR_SIZE = 8
+CHAR_WIDTH = 8
+NUM_STOPS = 4  # number of stops to display on the screen
 
 
 def setup_oled():
@@ -21,37 +18,9 @@ def setup_oled():
     return oled
 
 
-def connect(username, password):
-    board_led = machine.Pin(2, machine.Pin.OUT)
-    board_led.value(0)
-    sta_if = network.WLAN(network.STA_IF)
-    sta_if.active(True)
-
-    sta_if.connect(username, password)
-
-    oled.text("Connecting...", 0, 0)
-    oled.show()
-
-    while not sta_if.isconnected():
-        board_led.value(1)
-        time.sleep(1)
-        board_led.value(0)
-        time.sleep(1)
-
-    oled.fill(0)
-
-    for _ in range(3):
-        board_led.value(1)
-        time.sleep(0.1)
-        board_led.value(0)
-        time.sleep(0.1)
-
-    board_led.value(1)
-
-
 oled = setup_oled()
 
-connect(username, password)
+username, password = open("creds", "r").read().split("\n")[:-1]
 
 
 async def get_departures(stop_num="8011155", num_results=4):
@@ -64,18 +33,32 @@ async def get_departures(stop_num="8011155", num_results=4):
 
         directions = [departure["direction"] for departure in departures]
 
-        for _ in range(4):
+        for _ in range(NUM_STOPS):
             scroll_pos = 0
 
             max_len_departure = max([len(direction) for direction in directions])
 
-            for i, scroll_pos in enumerate(reversed(range(0 - max_len_departure, 1))):
-                for j, direction in enumerate(directions):
-                    if len(direction) * CHAR_SIZE > OLED_WIDTH:
-                        oled.text(direction, scroll_pos, CHAR_SIZE * j)
+            max_scroll_pos = 0 - max_len_departure
+
+            for i, scroll_pos in enumerate(reversed(range(max_scroll_pos, 1))):
+
+                for row_num, direction in enumerate(directions):
+                    if len(direction) * CHAR_WIDTH > OLED_WIDTH:
+                        curr_x = scroll_pos
                     else:
-                        oled.text(direction, 0, CHAR_SIZE * j)
+                        curr_x = 0
+
+                    for char in direction:
+                        if char in bitmaps.de_bitmaps:
+                            bitmaps.draw_de_char(
+                                oled, char, curr_x, CHAR_WIDTH * row_num
+                            )
+                        else:
+                            oled.text(char, curr_x, (CHAR_WIDTH * row_num) + 2, 1)
+                        curr_x += 8
+
                 oled.show()
+
                 # if first pass, sleep for a bit so you can read the beginning of the text
                 if i == 0:
                     time.sleep(1)
